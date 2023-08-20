@@ -4,58 +4,97 @@ import { ImageGallery } from './ImageGallery';
 import { Loader } from './Loader';
 import { Button } from './Button';
 import { Modal } from './Modal';
+import { ToastContainer, toast, Slide } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { fetchImages } from './Fetch';
 
 export class App extends Component {
   state = {
-    images:[],
-    query:'',
-    page:1,
+    images: [],
+    query: '',
+    page: 1,
+    totalPages: 0,
+    error: null,
+    loader: false,
   };
-componentDidUpdate(prevProps,prevState){
-  if(prevState.query !==this.state.query || prevState.page!==this.state.page){
-    console.log(this.slicedQuery())
-    
+  async componentDidUpdate(prevProps, prevState) {
+    if (
+      prevState.query !== this.state.query ||
+      prevState.page !== this.state.page
+    ) {
+      this.createMarkup();
+      
+    }
   }
-}
 
-  changeQuery=(newQuery)=>{
+  createMarkup = async () => {
+    const { query, page } = this.state;
+    const perPage=12;
+
+    try {
+      this.setState({ loader: true });
+
+      const data = await fetchImages(query, page);
+      const array = await data.hits.map(
+        ({ id, webformatURL, largeImageURL }) => {
+          return { id, webformatURL, largeImageURL };
+        }
+      );
+      if (data.hits.length === 0) {
+        // Видаляємо попередні нотифікації
+        toast.dismiss();
+        toast.info('Image was not found...', {
+          position: toast.POSITION.TOP_CENTER,
+        });
+        return;
+      };
+      this.setState(state => ({
+        images: [...state.images, ...array],
+        isLoading: false,
+        error: '',
+        totalPages:Math.ceil(data.totalHits/perPage)
+      }));
+      console.log(data.hits.length)
+    } catch (error) {
+      this.setState({ error: 'error' }); // Встановлюємо повідомлення про помилку
+    } finally {
+      this.setState({ loader: false }); // Вимикаємо прапорець завантаження незалежно від результату
+    }
+  };
+
+  changeQuery = newQuery => {
     this.setState({
-      query:`${Date.now()}/${newQuery}`,
-      images:[],
-      page:1,
-    })
-  }
-  handleLoadMore=()=>{
-    this.setState(prevState=>({
-    page:prevState.page + 1
+      query: `${Date.now()}/${newQuery}`,
+      images: [],
+      page: 1,
+      
+    });
+  };
+  handleLoadMore = () => {
+    this.setState(prevState => ({
+      page: prevState.page + 1,
     }));
   };
-  slicedQuery = ()=>{
-    const index=this.state.query.indexOf('/');
-    if(index!==-1){}
-    const queryLength = this.state.query.length
-    return this.state.query.slice(index+1,queryLength);
-    
-  } 
 
-  
   render() {
-    const API_KEY = '38308100-c8bfe7ecfd47e0eeb8c400dc4';
-  
-    
+    const { images,  page, totalPages,loader } = this.state;
+
     return (
       <div>
+        <div><ToastContainer transition={Slide} /></div>
+        
         <div>
-          <Searchbar changeQuery={this.changeQuery}/>
+          <Searchbar changeQuery={this.changeQuery} />
         </div>
         <div>
-          <ImageGallery />
+          <ImageGallery images={images} />
         </div>
         <div>
-          <Loader />
+        {loader && <Loader />}
         </div>
-        <div>
-          <Button loadMore={this.handleLoadMore} />
+        <div>{images.length > 0 && totalPages !== page && !loader && (
+          <Button loadMore={this.handleLoadMore} />)}
+          
         </div>
         <div>
           <Modal />
