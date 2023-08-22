@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { Searchbar } from './Searchbar';
-import { ImageGallery } from './ImageGallery';
-import { Loader } from './Loader';
-import { Button } from './Button';
-import { Modal } from './Modal';
+import { Searchbar } from './searchbar/Searchbar';
+import { ImageGallery } from './imageGallery/ImageGallery';
+import { Loader } from './loader/Loader';
+import { Button } from './button/Button';
+
 import { ToastContainer, toast, Slide } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { fetchImages } from './Fetch';
@@ -23,42 +23,41 @@ export class App extends Component {
       prevState.page !== this.state.page
     ) {
       this.createMarkup();
-      
     }
   }
 
   createMarkup = async () => {
     const { query, page } = this.state;
-    const perPage=12;
+    const perPage = 12;
 
     try {
       this.setState({ loader: true });
 
       const data = await fetchImages(query, page);
       const array = await data.hits.map(
-        ({ id, webformatURL, largeImageURL }) => {
+        ({ id, webformatURL, largeImageURL,previewURL }) => {
           return { id, webformatURL, largeImageURL };
         }
       );
       if (data.hits.length === 0) {
-        // Видаляємо попередні нотифікації
+        
         toast.dismiss();
         toast.info('Image was not found...', {
           position: toast.POSITION.TOP_CENTER,
         });
         return;
-      };
+      }
       this.setState(state => ({
         images: [...state.images, ...array],
         isLoading: false,
         error: '',
-        totalPages:Math.ceil(data.totalHits/perPage)
+        totalPages: Math.ceil(data.totalHits / perPage),
       }));
-      console.log(data.hits.length)
+      console.log(data.hits.length);
     } catch (error) {
-      this.setState({ error: 'error' }); // Встановлюємо повідомлення про помилку
+      this.setState({ error: 'error' }); 
     } finally {
-      this.setState({ loader: false }); // Вимикаємо прапорець завантаження незалежно від результату
+      this.setState({ loader: false }); 
     }
   };
 
@@ -67,7 +66,6 @@ export class App extends Component {
       query: `${Date.now()}/${newQuery}`,
       images: [],
       page: 1,
-      
     });
   };
   handleLoadMore = () => {
@@ -77,29 +75,22 @@ export class App extends Component {
   };
 
   render() {
-    const { images,  page, totalPages,loader } = this.state;
+    const { images, page, totalPages, loader } = this.state;
 
     return (
-      <div>
-        <div><ToastContainer transition={Slide} /></div>
-        
-        <div>
-          <Searchbar changeQuery={this.changeQuery} />
-        </div>
-        <div>
-          <ImageGallery images={images} />
-        </div>
-        <div>
+      <>
+        <ToastContainer transition={Slide} />
+
+        <Searchbar changeQuery={this.changeQuery} />
+
+        <ImageGallery images={images} />
+
         {loader && <Loader />}
-        </div>
-        <div>{images.length > 0 && totalPages !== page && !loader && (
-          <Button loadMore={this.handleLoadMore} />)}
-          
-        </div>
-        <div>
-          <Modal />
-        </div>
-      </div>
+
+        {images.length > 0 && totalPages !== page && !loader && (
+          <Button loadMore={this.handleLoadMore} />
+        )}
+      </>
     );
   }
 }
