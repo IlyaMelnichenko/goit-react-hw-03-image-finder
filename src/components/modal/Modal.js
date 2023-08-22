@@ -32,11 +32,13 @@ export const CustomModal = ({
   onModalClose,
   isLoadingImage,
   image,
-  afterOpen
+  afterOpen,
+  onLoad,
+  onError
 }) => {
   return (
     <Modal  onAfterOpen={afterOpen} isOpen={isOpen} onRequestClose={onModalClose} style={customStyles}>
-      {isLoadingImage ? <Loader /> : <StyledModalImg src={image} alt="" />}
+      {isLoadingImage ? <Loader /> : <StyledModalImg onLoad={onLoad} onError={onError} src={image} alt="" />}
     </Modal>
   );
 };

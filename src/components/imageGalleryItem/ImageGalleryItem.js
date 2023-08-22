@@ -7,20 +7,18 @@ export class ImageGalleryItem extends Component {
     isLoadingImage: false,
   };
    openModal = () => {
-    this.setState({ isModalOpen: true,isLoadingImage: true,  });
-
-    // const largeImage = new Image();
-    // largeImage.onload = () => {
-    //   this.setState({ isLoadingImage: false });
-    // };
-    // largeImage.onerror = () => {
-    //   this.setState({ isLoadingImage: false });
-    //   console.error('Error loading image');
-    // };
-    // largeImage.src = this.props.image.largeImageURL;
-  };
+    this.setState({ isLoadingImage: true,isModalOpen: true,  });
+};
     closeModal = () => this.setState({ isModalOpen: false });
-    afterOpen=()=>this.setState({isLoadingImage: false,})
+    
+    handleImageLoad = () => {
+      this.setState({ isLoadingImage: false });
+    };
+  
+    handleImageError = () => {
+      this.setState({ isLoadingImage: false });
+      console.error('Error loading image');
+    };
 
   render() {
     const {image}=this.props;
@@ -34,6 +32,8 @@ export class ImageGalleryItem extends Component {
        isLoadingImage={isLoadingImage}
        image={image.largeImageURL}
        afterOpen={this.afterOpen}
+       onLoad={this.handleImageLoad}
+       onError={this.handleImageError}
        />
       </>
 
