@@ -7,7 +7,7 @@ export class ImageGalleryItem extends Component {
     isLoadingImage: false,
   };
    openModal = () => {
-    this.setState({ isLoadingImage: true,isModalOpen: true,  });
+    this.setState({ isModalOpen: true,isLoadingImage: true,  });
 };
     closeModal = () => this.setState({ isModalOpen: false });
     
@@ -32,8 +32,7 @@ export class ImageGalleryItem extends Component {
        isLoadingImage={isLoadingImage}
        image={image.largeImageURL}
        afterOpen={this.afterOpen}
-       onLoad={this.handleImageLoad}
-       onError={this.handleImageError}
+        onLoad={this.handleImageLoad}
        />
       </>
 
